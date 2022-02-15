@@ -32,110 +32,17 @@ DB算法有以下几个优势：
 
 算法结构简单，无需繁琐的后处理
 在开源数据上拥有良好的精度和性能
-在传统的图像分割算法中，获取概率图后，会使用标准二值化（Standard Binarize）方法进行处理，将低于阈值的像素点置0，高于阈值的像素点置1，公式如下：
-
-Bi,j={1,ifPi,j>=t,0,otherwise. B_{i,j}=\left\{ \begin{aligned} 1 , if P_{i,j} >= t ,\\ 0 , otherwise. \end{aligned} \right.
-B 
-i,j
-​	
- ={ 
-1,ifP 
-i,j
-​	
- >=t,
-0,otherwise.
-​	
- 
-
-但是标准的二值化方法是不可微的，导致网络无法端对端训练。为了解决这个问题，DB算法提出了可微二值化（Differentiable Binarization，DB）。可微二值化将标准二值化中的阶跃函数进行了近似，使用如下公式进行代替：
-
-B^=11+e−k(Pi,j−Ti,j)\hat{B} = \frac{1}{1 + e^{-k(P_{i,j}-T_{i,j})}}
-B
-^
- = 
-1+e 
-−k(P 
-i,j
-​	
- −T 
-i,j
-​	
- )
- 
-1
-​	
- 
-
+在传统的图像分割算法中，获取概率图后，会使用标准二值化（Standard Binarize）方法进行处理，将低于阈值的像素点置0，高于阈值的像素点置1，,但是标准的二值化方法是不可微的，导致网络无法端对端训练。为了解决这个问题，DB算法提出了可微二值化（Differentiable Binarization，DB）。可微二值化将标准二值化中的阶跃函数进行了近似，使用如下公式进行代替
+![image](https://user-images.githubusercontent.com/50852027/153996154-8e9696ce-58e9-447e-93d8-5d47f190f587.png)
 其中，P是上文中获取的概率图，T是上文中获取的阈值图，k是增益因子，在实验中，根据经验选取为50。标准二值化和可微二值化的对比图如 下图3（a） 所示。
+![image](https://user-images.githubusercontent.com/50852027/153996195-1ba64f4f-4681-43ec-9021-c29cceac9058.png)
 
 当使用交叉熵损失时，正负样本的loss分别为 l+l_+l 
-+
-​	
-  和 l−l_-l 
-−
-​	
-  ：
 
-l+=−log(11+e−k(Pi,j−Ti,j))l_+ = -log(\frac{1}{1 + e^{-k(P_{i,j}-T_{i,j})}})
-l 
-+
-​	
- =−log( 
-1+e 
-−k(P 
-i,j
-​	
- −T 
-i,j
-​	
- )
- 
-1
-​	
- )
-
-l−=−log(1−11+e−k(Pi,j−Ti,j))l_- = -log(1-\frac{1}{1 + e^{-k(P_{i,j}-T_{i,j})}})
-l 
-−
-​	
- =−log(1− 
-1+e 
-−k(P 
-i,j
-​	
- −T 
-i,j
-​	
- )
- 
-1
-​	
- )
-
-对输入 xxx 求偏导则会得到：
-
-δl+δx=−kf(x)e−kx\frac{\delta{l_+}}{\delta{x}} = -kf(x)e^{-kx}
-δx
-δl 
-+
-​	
- 
-​	
- =−kf(x)e 
-−kx
- 
-
-δl−δx=−kf(x)\frac{\delta{l_-}}{\delta{x}} = -kf(x)
-δx
-δl 
-−
-​	
- 
-​	
- =−kf(x)
 
 可以发现，增强因子会放大错误预测的梯度，从而优化模型得到更好的结果。图3（b） 中，x<0x<0x<0 的部分为正样本预测为负样本的情况，可以看到，增益因子k将梯度进行了放大；而 图3（c） 中x>0x>0x>0 的部分为负样本预测为正样本时，梯度同样也被放大了。
 
+![image](https://user-images.githubusercontent.com/50852027/153994123-f17b1060-d272-4736-882f-d8fbea98a656.png)
 
 
 图3：DB算法示意图
@@ -143,6 +50,7 @@ i,j
 
 DB算法整体结构如下图所示：
 
+![image](https://user-images.githubusercontent.com/50852027/153994202-c3e6e3b5-8ddf-42d5-9a1c-b21347dc06b3.png)
 
 
 图2 DB模型网络结构示意图
@@ -156,4 +64,10 @@ DB文本检测模型可以分为三个部分：
 Backbone网络，负责提取图像的特征
 FPN网络，特征金字塔结构增强特征
 Head网络，计算文本区域概率图
-本节使用PaddlePaddle分别实现上述三个网络模块，并完成完整的网络构建。
+提供的标注文件格式为：
+
+" 图像文件名                    json.dumps编码的图像标注信息"
+ch4_test_images/img_61.jpg    [{"transcription": "MASA", "points": [[310, 104], [416, 141], [418, 216], [312, 179]], ...}]
+json.dumps编码前的图像标注信息是包含多个字典的list，字典中的points表示文本框的四个点的坐标(x, y)，从左上角的点开始顺时针排列。 transcription中的字段表示当前文本框的文字，在文本检测任务中并不需要这个信息。 如果您想在其他数据集上训练PaddleOCR，可以按照上述形式构建标注文件。
+
+如果"transcription"字段的文字为'*'或者'###‘，表示对应的标注可以被忽略掉，因此，如果没有文字标签，可以将transcription字段设置为空字符串。
