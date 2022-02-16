@@ -18,4 +18,5 @@ practice：跑的一些作业
 ![image](https://user-images.githubusercontent.com/50852027/154206098-d7c1dc99-b1fd-489f-9e3e-14591b424920.png)
 
 还在慢慢写中。。。。。。。。。。。。。。。。。。。。。
+
 #最近想做一个paddleocr的在线识别网页，在想怎么在线部署
