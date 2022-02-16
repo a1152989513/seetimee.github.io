@@ -6,8 +6,9 @@ practice：跑的一些作业
 
 
 算法结构主要分为文本框部分和文字识别部分（附带文本框矫正部分用来适应某些不规则文本的场景）
+文本框识别
 ![image](https://user-images.githubusercontent.com/50852027/154205585-2ec6555c-b451-4de5-97d7-50fa25cb8971.png)
-
+文字识别输出
 ![image](https://user-images.githubusercontent.com/50852027/154205481-74a5bc2c-0d8a-4335-beb9-f186f54559d7.png)
 
 还在慢慢写中。。。。。。。。。。。。。。。。。。。。。
