@@ -1,4 +1,6 @@
 ```python
+%matplotlib inline
+from PIL import Image
 img = Image.open('./###')
 img = np.array(img)
 
