@@ -1,7 +1,9 @@
 paddle ocr项目的个人笔记
 
 查看主页中的各类标签
+
 ocr-overview：ocr算法的一些记录
+
 practice：跑的一些作业
 
 
